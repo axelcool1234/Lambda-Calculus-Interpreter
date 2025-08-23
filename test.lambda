@@ -1,0 +1,37 @@
+# I   { λx.x }
+# M   { λf.f f }
+# K   { λx.λy.x }
+# C   { λf.λx.λy.f y x }
+# KI  { C K } 
+# KI  { K I } 
+# B   { λf.λg.λx.f (g x) }
+# T   { C I }
+# V   { B C T }
+# BBB { B B B }
+
+# Id     { I  }
+# ∘      { B  }
+# Const  { K  }
+# Flip   { C  }
+# True   { K  }
+# False  { KI }
+# Not    { C  }
+# And    { λp.λq.p q p }
+# Or     { λp.λq.p p q }
+# Or     { M }
+# Beq    { λp.λq.p q (Not q) }
+# Num    { λf.λx.[f] x }
+# Zero   { False }
+# Zero   { C K }
+# One    { Id }
+# One    { I }
+# Succ   { λn.λf.B f (n f) }
+# Add    { λm.λn.(m Succ n) } 
+# Mul    { λm.λn.λf. m (n f) }
+# Mul    { B }
+# Pow    { T }
+# IsZero { λn.n (K False) True }
+# Pred { λn.λf.λx.n (λg.λh.h (g f)) (λu.x) (λu.u) }
+# Pred { λn.n(λg.IsZero (g Num[1]) I (B Succ g)) (K Num[0]) Num[0] }
+
+Pred Num[5]
