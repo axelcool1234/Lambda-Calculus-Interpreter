@@ -34,6 +34,9 @@
 # Pred { λn.λf.λx.n (λg.λh.h (g f)) (λu.x) (λu.u) }
 # Pred { λn.n(λg.IsZero (g Num[1]) I (B Succ g)) (K Num[0]) Num[0] }
 
+# Y { λf.(λx.f (x x)) (λx.f (x x)) }
+# Ω { (λx. x x) (λx. x x) }
+
 # If { λv.λt.λf.v t f }
 # Mkpair { λx.λy.λs.s x y }
 # Fst { λp.p True }
@@ -45,5 +48,9 @@
 # Wrap { λf.λp. Mkpair (False) (If (Fst p) (Snd p) (f (Snd p))) }
 # Sub1 { λn.λf.λx. Snd (n (Wrap f) (Mkpair True x)) }
 # SubN { λn.λm.m Sub1 n }
+# Mkmult { λt.λn.λm. If (IsZero n) Zero (AddN m ((t t) (Sub1 n) m)) }
+# Mult2 { Mkmult Mkmult }
+# Mkmk { λk.λt. t ((k k) t) }
+# Mk { Mkmk Mkmk }
 
-Exp Num[4] Num[2]
+λx.(λy. y) x
