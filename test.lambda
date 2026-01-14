@@ -34,4 +34,16 @@
 # Pred { λn.λf.λx.n (λg.λh.h (g f)) (λu.x) (λu.u) }
 # Pred { λn.n(λg.IsZero (g Num[1]) I (B Succ g)) (K Num[0]) Num[0] }
 
-Pred Num[5]
+# If { λv.λt.λf.v t f }
+# Mkpair { λx.λy.λs.s x y }
+# Fst { λp.p True }
+# Snd { λp.p False }
+# Add1 { λn.λf.λx.f (n f x) }
+# AddN { λn.λm.m Add1 n } 
+# Mult { λn.λm.m (AddN n) Zero }
+# Exp { λn.λm.m (Mult n) One }
+# Wrap { λf.λp. Mkpair (False) (If (Fst p) (Snd p) (f (Snd p))) }
+# Sub1 { λn.λf.λx. Snd (n (Wrap f) (Mkpair True x)) }
+# SubN { λn.λm.m Sub1 n }
+
+Exp Num[4] Num[2]
