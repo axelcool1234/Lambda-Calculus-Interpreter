@@ -225,4 +225,4 @@ flatten_app_chain_rest(app(F, E0), E, L, C) :-
     C is C0 + 1.
 flatten_app_chain_rest(vari(V), vari(V), L, 1) :- member(vari(V), L).
 flatten_app_chain_rest(vari(V), vari(V), _, 0).
-klatten_app_chain_rest(app(F, E), app(F, E), _, 0). 
+flatten_app_chain_rest(app(F, E), app(F, E), _, 0). 
