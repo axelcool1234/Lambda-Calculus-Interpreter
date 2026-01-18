@@ -177,17 +177,25 @@ normal_form_print_step(E, E, _).
 
 % Pretty Printer (Unparser)
 print_AST(E) :- print_AST(E, false).
-print_AST(E, false) :- macro(M, AST), alpha_equivalent(E, AST), write(M).
+print_AST(E, false) :-
+    % Normalize both sides so alpha-renaming never blocks macro recognition
+    alpha_normalize(E, EN),
+    macro(M, AST0),
+    alpha_normalize(AST0, AN),
+    alpha_equivalent(EN, AN),
+    write(M).
 
 % Finds and prints parameterized macros
-% TODO: If alpha-conversion occured during execution, some macros will not be identified correctly. See: Multiplication as the B combinator, applied to Nums.
-% GOAL: Implement alpha-normalization, so that the Macro AST and the given AST will be easier to identify as equal.
 print_AST(E0, false) :-
-	macro(M, MAST0),
-	remove_reps(MAST0, MAST, L),
-	flatten_app_chain(E0, E, L, C),
-	alpha_equivalent(E, MAST),
-	write(M), write('['), write(C), write(']').
+    % Normalize both the candidate AST and macro AST to be robust to alpha-conversion
+    alpha_normalize(E0, EN0),
+    macro(M, MAST0),
+    alpha_normalize(MAST0, MAST0N),
+    remove_reps(MAST0N, MAST, L),
+    flatten_app_chain(EN0, E, L, C),
+    % After normalization, a simple structural comparison via alpha_equivalent suffices
+    alpha_equivalent(E, MAST),
+    write(M), write('['), write(C), write(']').
 
 print_AST(abs(V, E), Expand) :- write('('), print_AST(V, Expand), write('.'), print_AST(E, Expand), write(')').
 print_AST(app(E1, E2), Expand) :- write('('), print_AST(E1, Expand), write(' '), print_AST(E2, Expand), write(')').
@@ -195,16 +203,7 @@ print_AST(vari(V), _) :- write(V).
 print_AST(bind(V), _) :- write('λ'), write(V).
 
 
-% The following rules are used to compare parameterized macro ASTs to a flattened AST (unused due to commented out print_AST call)
-
-% This is probably flawed with sub-lambdas. EX: λn.(λy.y)((λz.z)n). n, y, and z all have the same index: 1.
-% bruijin_indices(AST, L) :- bruijin_indices(AST, L, 0).
-% bruijin_indices(rep(E), L, C) :- bruijin_indices(E, L, C).
-% bruijin_indices(app(E1, E2), L, C) :- bruijin_indices(E1, L1, 0), bruijin_indices(E2, L2, 0), append(L1, L2, L).
-% bruijin_indices(abs(bind(V), E), [V-C|L], C0) :- C is C0 + 1, bruijin_indices(E, L, C).
-% bruijin_indices(vari(_), [], _).
-
-% bruijin_form(AST0, AST).
+% The following rules are used to compare parameterized macro ASTs to a flattened AST
 
 remove_reps(rep(E0), E, [E0|Rs]) :- remove_reps(E0, E, Rs).
 remove_reps(abs(V, E0), abs(V, E), L) :- remove_reps(E0, E, L).
@@ -226,3 +225,30 @@ flatten_app_chain_rest(app(F, E0), E, L, C) :-
 flatten_app_chain_rest(vari(V), vari(V), L, 1) :- member(vari(V), L).
 flatten_app_chain_rest(vari(V), vari(V), _, 0).
 flatten_app_chain_rest(app(F, E), app(F, E), _, 0). 
+
+% Alpha Normalization
+% Rename bound variables deterministically to avoid false mismatches (when comparing macros to AST) due to alpha-conversion
+alpha_normalize(E, EN) :- alpha_normalize(E, EN, [], 1, _).
+
+% Abstraction: assign a canonical name vN for each new binder
+alpha_normalize(abs(bind(V), E), abs(bind(NV), EN), Env, N0, N2) :-
+    canonical_name(N0, NV),
+    N1 is N0 + 1,
+    alpha_normalize(E, EN, [V-NV|Env], N1, N2).
+
+% Application and repetition: traverse children, threading the counter
+alpha_normalize(app(E1, E2), app(EN1, EN2), Env, N0, N2) :-
+    alpha_normalize(E1, EN1, Env, N0, N1),
+    alpha_normalize(E2, EN2, Env, N1, N2).
+alpha_normalize(rep(E), rep(EN), Env, N0, N1) :-
+    alpha_normalize(E, EN, Env, N0, N1).
+
+% Variable: rename if bound; otherwise leave free variables as-is
+alpha_normalize(vari(V), vari(NV), Env, N0, N0) :-
+    (   member(V-NV, Env)
+    ->  true
+    ;   NV = V
+    ).
+
+% Helper to generate canonical binder names: v1, v2, v3, ...
+canonical_name(N, Name) :- number_string(N, NS), string_concat('v', NS, S), atom_string(Name, S).
