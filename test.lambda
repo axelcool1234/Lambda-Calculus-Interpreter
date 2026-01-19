@@ -72,5 +72,6 @@
 # IsNull { λl.l (λh.λt.λn.False) True }
 # Car { λl.l (λh.λt.λn.h) Null }
 # Cdr { λl.l (λh.λt.λn.t) Null }
+# Length { Y (λf.λl. (IsNull l) Num[0] (Succ (f (Cdr l)))) }
 
-Cdr (Cons m n)
+Length (Cons True (Cons False (Cons False Null)))
