@@ -8,6 +8,8 @@
 # T   { C I }
 # V   { B C T }
 # BBB { B B B }
+# B1  { λf.λg.λa.λb. f (g a b) }
+# B1  { BBB }
 
 # Id     { I  }
 # ∘      { B  }
@@ -31,26 +33,44 @@
 # Mul    { B }
 # Pow    { T }
 # IsZero { λn.n (K False) True }
-# Pred { λn.λf.λx.n (λg.λh.h (g f)) (λu.x) (λu.u) }
-# Pred { λn.n(λg.IsZero (g Num[1]) I (B Succ g)) (K Num[0]) Num[0] }
+# Pred   { λn.λf.λx.n (λg.λh.h (g f)) (λu.x) (λu.u) }
+# Pred   { λn.n(λg.IsZero (g Num[1]) I (B Succ g)) (K Num[0]) Num[0] }
+# Pair   { V }
+# Fst    { λp.p K }
+# Snd    { λp.p KI }
+# ϕ      { λp. Pair (Snd p) (Succ (Snd p)) }
+# Pred   { λn. Fst (n ϕ (Pair Num[0] Num[0])) } 
+# Sub    { λn.λk.k Pred n }
+# Leq    { λn.λk. IsZero (Sub n k) }
+# Eq     { λn.λk. And (Leq n k) (Leq k n) }
+# Gt     { λn.λk. Not (Leq n k) }
+# Gt     { B1 Not Leq }
+# Lt     { λn.λk. And (Leq n k) (Not (Eq n k)) }
+# Gte    { B1 Not Lt }
 
 # Y { λf.(λx.f (x x)) (λx.f (x x)) }
 # Ω { (λx. x x) (λx. x x) }
 
 # If { λv.λt.λf.v t f }
 # Mkpair { λx.λy.λs.s x y }
-# Fst { λp.p True }
-# Snd { λp.p False }
+# First { λp.p True }
+# Second { λp.p False }
 # Add1 { λn.λf.λx.f (n f x) }
 # AddN { λn.λm.m Add1 n } 
 # Mult { λn.λm.m (AddN n) Zero }
 # Exp { λn.λm.m (Mult n) One }
-# Wrap { λf.λp. Mkpair (False) (If (Fst p) (Snd p) (f (Snd p))) }
-# Sub1 { λn.λf.λx. Snd (n (Wrap f) (Mkpair True x)) }
+# Wrap { λf.λp. Mkpair (False) (If (First p) (Second p) (f (Second p))) }
+# Sub1 { λn.λf.λx. Second (n (Wrap f) (Mkpair True x)) }
 # SubN { λn.λm.m Sub1 n }
 # Mkmult { λt.λn.λm. If (IsZero n) Zero (AddN m ((t t) (Sub1 n) m)) }
 # Mult2 { Mkmult Mkmult }
 # Mkmk { λk.λt. t ((k k) t) }
 # Mk { Mkmk Mkmk }
 
-λx.(λy. y) x
+# Null { False } 
+# Cons { Mkpair } 
+# IsNull { λl.l (λh.λt.λn.False) True }
+# Car { λl.l (λh.λt.λn.h) Null }
+# Cdr { λl.l (λh.λt.λn.t) Null }
+
+Cdr (Cons m n)
