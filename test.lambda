@@ -49,6 +49,7 @@
 # Gte    { B1 Not Lt }
 
 # Y { λf.(λx.f (x x)) (λx.f (x x)) }
+# Z { (λf.(λx.( (λg. (f (λx. ((g g) x)))) (λg. (f (λx. ((g g) x)))) x))) }
 # Ω { (λx. x x) (λx. x x) }
 
 # If { λv.λt.λf.v t f }
